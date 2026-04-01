@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solid-State Fermentation Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container,
+        .card {
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            max-width: 700px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            color: #e2e8f0;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-button:hover {
+            border-color: #10b981;
+            color: #e2e8f0;
+        }
+
+        .tab-button.active {
+            background: #10b981;
+            border-color: #10b981;
+            color: #ffffff;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+            background: #1a2332;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .primary-btn {
+            background: #10b981;
+        }
+
+        .primary-btn:hover {
+            background: #059669;
+            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+        }
+
+        button.reset {
+            background: transparent;
+            border: 1.5px solid #475569;
+            color: #cbd5e1;
+        }
+
+        button.reset:hover {
+            background: #334155;
+            border-color: #64748b;
+        }
+
+        .results {
+            margin-top: 24px;
+            padding: 20px;
+            background: #0f172a;
+            border-radius: 5px;
+            display: none;
+            border: 1px solid #334155;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-item {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #1a2332;
+            border-left: 4px solid #10b981;
+            border-radius: 3px;
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-item p {
+            color: #cbd5e1;
+            margin: 0;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .result-value {
+            color: #f0fdf4;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .lab-history {
+            margin-top: 30px;
+            padding: 20px;
+            background: #0f172a;
+            border-radius: 5px;
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+
+        .history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .lab-history h2 {
+            color: #10b981;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .clear-history-btn {
+            flex: 0 0 auto;
+            width: auto;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            background: transparent;
+            color: #10b981;
+            border: 1px solid #10b981;
+            border-radius: 5px;
+        }
+
+        .clear-history-btn:hover {
+            background: #10b981;
+            color: #ffffff;
+            box-shadow: 0 6px 14px rgba(16, 185, 129, 0.25);
+        }
+
+        .history-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(16, 185, 129, 0.45) rgba(51, 65, 85, 0.25);
+        }
+
+        .history-table-wrap::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .history-table-wrap::-webkit-scrollbar-track {
+            background: rgba(51, 65, 85, 0.25);
+            border-radius: 999px;
+        }
+
+        .history-table-wrap::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.45);
+            border-radius: 999px;
+        }
+
+        .history-table-wrap::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.65);
+        }
+
+        table {
+            width: 100%;
+            min-width: 600px;
+            border-collapse: collapse;
+            background: #1a2332;
+            table-layout: fixed;
+        }
+
+        col.sample-col {
+            width: 28%;
+        }
+
+        col.category-col {
+            width: 18%;
+        }
+
+        col.result-col {
+            width: 27%;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            vertical-align: middle;
+            line-height: 1.35;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #10b981;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            border-bottom: 1px solid #0b7f5a;
+        }
+
+        td {
+            border-bottom: 1px solid #334155;
+            color: #cbd5e1;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
+        tbody tr:hover {
+            background: #0f172a;
+        }
+
+        .empty-history {
+            text-align: center;
+            color: #64748b;
+            padding: 16px;
+        }
+
+        .report-link-wrap {
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .report-link-wrap a {
+            font-size: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+        }
+
+        .report-link-wrap a:hover {
+            color: #10b981;
+            text-decoration: underline;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #334155;
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .footer a {
+            color: #10b981;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer a:hover {
+            color: #059669;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 12px;
+            }
+
+            .container,
+            .card {
+                padding: 20px;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab-button {
+                flex: 1 1 100%;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container card">
+        <h1>SSF Moisture Optimizer</h1>
+
+        <div class="tabs">
+            <button type="button" class="tab-button active" data-tab="moisturePrep" onclick="switchTab('moisturePrep')">Moisture Prep</button>
+            <button type="button" class="tab-button" data-tab="moistureContent" onclick="switchTab('moistureContent')">Moisture Content</button>
+            <button type="button" class="tab-button" data-tab="yieldAnalysis" onclick="switchTab('yieldAnalysis')">Yield Analysis</button>
+        </div>
+
+        <div id="moisturePrep" class="tab-panel active">
+            <form id="ssfForm">
+                <div class="form-group">
+                    <label for="sampleName">Sample Name</label>
+                    <input type="text" id="sampleName" placeholder="e.g., Sample-001">
+                </div>
+
+                <div class="form-group">
+                    <label for="substrateMass">Substrate Mass (g)</label>
+                    <input type="number" id="substrateMass" step="0.1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="initialMoisture">Initial Moisture (%)</label>
+                    <input type="number" id="initialMoisture" step="0.1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetMoisture">Target Moisture (%)</label>
+                    <input type="number" id="targetMoisture" step="0.1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="inoculumRatio">Inoculum Ratio (%)</label>
+                    <input type="number" id="inoculumRatio" step="0.1" required>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="primary-btn" onclick="calculateSSF()">Calculate</button>
+                    <button type="button" class="reset" onclick="resetMoistureForm()">Reset</button>
+                </div>
+            </form>
+
+            <div id="moistureResults" class="results">
+                <div class="result-item">
+                    <p><span class="result-label">Water to Add (ml):</span> <span class="result-value" id="waterToAdd">0</span></p>
+                </div>
+                <div class="result-item">
+                    <p><span class="result-label">Inoculum Volume (ml):</span> <span class="result-value" id="inoculumVolume">0</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="moistureContent" class="tab-panel">
+            <form id="moistureContentForm">
+                <div class="form-group">
+                    <label for="wetMass">Wet Mass (g)</label>
+                    <input type="number" id="wetMass" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="dryMass">Dry Mass (g)</label>
+                    <input type="number" id="dryMass" step="0.01" required>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="primary-btn" onclick="calculateMoistureContent()">Calculate % Moisture</button>
+                    <button type="button" class="reset" onclick="resetMoistureContentForm()">Reset</button>
+                </div>
+            </form>
+
+            <div id="moistureContentResults" class="results">
+                <div class="result-item">
+                    <p><span class="result-label">Substrate Moisture:</span> <span class="result-value" id="substrateMoistureValue">0.00%</span></p>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="primary-btn" onclick="useAsInitialMoisture()">Use as Initial Moisture</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="yieldAnalysis" class="tab-panel">
+            <form id="yieldForm">
+                <div class="form-group">
+                    <label for="yieldSampleName">Sample Name</label>
+                    <input type="text" id="yieldSampleName" placeholder="e.g., Batch-Y-01">
+                </div>
+
+                <div class="form-group">
+                    <label for="totalProduct">Total Product Extracted (mg or U)</label>
+                    <input type="number" id="totalProduct" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="initialDryMass">Initial Substrate Dry Mass (g)</label>
+                    <input type="number" id="initialDryMass" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fermentationTime">Fermentation Time (hours)</label>
+                    <input type="number" id="fermentationTime" step="0.01" required>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="primary-btn" onclick="calculateYield()">Calculate Yield</button>
+                    <button type="button" class="reset" onclick="resetYieldForm()">Reset</button>
+                </div>
+            </form>
+
+            <div id="yieldResults" class="results">
+                <div class="result-item">
+                    <p><span class="result-label">Yield (mg/g):</span> <span class="result-value" id="yieldValue">0</span></p>
+                </div>
+                <div class="result-item">
+                    <p><span class="result-label">Productivity (mg/g/h):</span> <span class="result-value" id="productivityValue">0</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="lab-history">
+            <div class="history-header">
+                <h2>Lab History</h2>
+                <button type="button" class="clear-history-btn" onclick="clearHistory()">Clear History</button>
+            </div>
+            <div class="history-table-wrap">
+                <table>
+                    <colgroup>
+                        <col class="sample-col">
+                        <col class="category-col">
+                        <col class="result-col">
+                        <col class="result-col">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Sample Name</th>
+                            <th>Category (Prep/Yield/Content)</th>
+                            <th>Result A</th>
+                            <th>Result B</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="report-link-wrap">
+                <a href="SSF Moisture Optimizer.pdf" target="_blank" rel="noopener noreferrer">
+                    View Sample Lab Report (PDF)
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            Built by <a href="https://github.com/codebypappy" target="_blank">codebypappy</a> | LAUTECH Microbiology 2026
+        </div>
+    </div>
+
+    <script>
+        const HISTORY_KEY = 'ssfLabHistory';
+        let historyEntries = [];
+        let lastMoistureContent = null;
+
+        function switchTab(tabId) {
+            const panels = document.querySelectorAll('.tab-panel');
+            const tabButtons = document.querySelectorAll('.tab-button');
+
+            panels.forEach((panel) => {
+                panel.classList.toggle('active', panel.id === tabId);
+            });
+
+            tabButtons.forEach((button) => {
+                button.classList.toggle('active', button.dataset.tab === tabId);
+            });
+        }
+
+        function calculateSSF() {
+            const sampleName = document.getElementById('sampleName').value.trim() || 'Unnamed';
+            const substrateMass = parseFloat(document.getElementById('substrateMass').value);
+            const initialMoisture = parseFloat(document.getElementById('initialMoisture').value);
+            const targetMoisture = parseFloat(document.getElementById('targetMoisture').value);
+            const inoculumRatio = parseFloat(document.getElementById('inoculumRatio').value);
+
+            if (
+                Number.isNaN(substrateMass) || Number.isNaN(initialMoisture) ||
+                Number.isNaN(targetMoisture) || Number.isNaN(inoculumRatio)
+            ) {
+                alert('Please fill all Moisture Prep fields.');
+                return;
+            }
+
+            if (targetMoisture >= 100 || targetMoisture <= initialMoisture) {
+                alert('Target moisture must be greater than initial moisture and less than 100%.');
+                return;
+            }
+
+            const inoculumVolume = (substrateMass * inoculumRatio) / 100;
+            const totalLiquid = (substrateMass * (targetMoisture - initialMoisture)) / (100 - targetMoisture);
+            const waterToAdd = totalLiquid - inoculumVolume;
+
+            document.getElementById('waterToAdd').textContent = waterToAdd.toFixed(2);
+            document.getElementById('inoculumVolume').textContent = inoculumVolume.toFixed(2);
+            document.getElementById('moistureResults').classList.add('show');
+
+            addToHistory(sampleName, 'Prep', `Water (ml): ${waterToAdd.toFixed(2)}`, `Inoculum (ml): ${inoculumVolume.toFixed(2)}`);
+        }
+
+        function calculateYield() {
+            const sampleName = document.getElementById('yieldSampleName').value.trim() || 'Unnamed';
+            const totalProduct = parseFloat(document.getElementById('totalProduct').value);
+            const initialDryMass = parseFloat(document.getElementById('initialDryMass').value);
+            const fermentationTime = parseFloat(document.getElementById('fermentationTime').value);
+
+            if (
+                Number.isNaN(totalProduct) || Number.isNaN(initialDryMass) || Number.isNaN(fermentationTime) ||
+                initialDryMass <= 0 || fermentationTime <= 0
+            ) {
+                alert('Please provide valid values. Dry mass and time must be greater than 0.');
+                return;
+            }
+
+            const yieldValue = totalProduct / initialDryMass;
+            const productivityValue = yieldValue / fermentationTime;
+
+            document.getElementById('yieldValue').textContent = yieldValue.toFixed(4);
+            document.getElementById('productivityValue').textContent = productivityValue.toFixed(4);
+            document.getElementById('yieldResults').classList.add('show');
+
+            addToHistory(sampleName, 'Yield', `Yield (mg/g): ${yieldValue.toFixed(4)}`, `Productivity (mg/g/h): ${productivityValue.toFixed(4)}`);
+        }
+
+        function calculateMoistureContent() {
+            const wetMass = parseFloat(document.getElementById('wetMass').value);
+            const dryMass = parseFloat(document.getElementById('dryMass').value);
+
+            if (Number.isNaN(wetMass) || Number.isNaN(dryMass) || wetMass <= 0 || dryMass < 0) {
+                alert('Please enter valid wet and dry mass values. Wet mass must be greater than 0.');
+                return;
+            }
+
+            if (dryMass > wetMass) {
+                alert('Dry mass cannot be greater than wet mass.');
+                return;
+            }
+
+            const moisturePercent = ((wetMass - dryMass) / wetMass) * 100;
+            lastMoistureContent = moisturePercent;
+
+            document.getElementById('substrateMoistureValue').textContent = `${moisturePercent.toFixed(2)}%`;
+            document.getElementById('moistureContentResults').classList.add('show');
+
+            const sampleName = document.getElementById('sampleName').value.trim() || 'Unnamed';
+            addToHistory(
+                sampleName,
+                'Content Analysis',
+                `Wet/Dry Mass: ${wetMass.toFixed(2)}g / ${dryMass.toFixed(2)}g`,
+                `% Moisture: ${moisturePercent.toFixed(2)}%`
+            );
+        }
+
+        function useAsInitialMoisture() {
+            if (lastMoistureContent === null) {
+                alert('Calculate moisture content first.');
+                return;
+            }
+
+            document.getElementById('initialMoisture').value = lastMoistureContent.toFixed(2);
+            switchTab('moisturePrep');
+        }
+
+        function addToHistory(sampleName, category, resultA, resultB) {
+            historyEntries.unshift({ sampleName, category, resultA, resultB });
+            saveHistory();
+            renderHistory();
+        }
+
+        function clearHistory() {
+            const shouldClear = window.confirm('Clear all Lab History entries? This cannot be undone.');
+
+            if (!shouldClear) {
+                return;
+            }
+
+            historyEntries = [];
+            saveHistory();
+            renderHistory();
+        }
+
+        function saveHistory() {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(historyEntries));
+        }
+
+        function loadHistory() {
+            const rawData = localStorage.getItem(HISTORY_KEY);
+
+            if (!rawData) {
+                historyEntries = [];
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(rawData);
+                historyEntries = Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                historyEntries = [];
+            }
+        }
+
+        function renderHistory() {
+            const tableBody = document.getElementById('historyTableBody');
+
+            if (historyEntries.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="empty-history">No entries yet. Run a calculation to log data.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = historyEntries
+                .map((entry) => `<tr><td>${entry.sampleName}</td><td>${entry.category}</td><td>${entry.resultA}</td><td>${entry.resultB}</td></tr>`)
+                .join('');
+        }
+
+        function resetMoistureForm() {
+            document.getElementById('ssfForm').reset();
+            document.getElementById('moistureResults').classList.remove('show');
+        }
+
+        function resetYieldForm() {
+            document.getElementById('yieldForm').reset();
+            document.getElementById('yieldResults').classList.remove('show');
+        }
+
+        function resetMoistureContentForm() {
+            document.getElementById('moistureContentForm').reset();
+            document.getElementById('moistureContentResults').classList.remove('show');
+            document.getElementById('substrateMoistureValue').textContent = '0.00%';
+            lastMoistureContent = null;
+        }
+
+        loadHistory();
+        renderHistory();
+    </script>
+</body>
+</html>
